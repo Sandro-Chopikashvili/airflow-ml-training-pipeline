@@ -128,12 +128,18 @@ services:
       --port 5000
       --backend-store-uri postgresql+psycopg2://airflow:airflow@postgres/airflow
       --default-artifact-root /opt/mlflow/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     ports:
       - "5000:5000"
     volumes:
       - ./mlflow_artifacts:/opt/mlflow/artifacts
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   airflow-apiserver:
     <<: *airflow-common
