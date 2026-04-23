@@ -311,5 +311,6 @@ services:
 
 volumes:
   postgres-db-volume:
-  - data-postgres-volume:
+  data-postgres-volume:
+
 
