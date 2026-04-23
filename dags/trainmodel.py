@@ -60,6 +60,7 @@ def pipeline():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """)
+        return 'tables_created'
 
     @task
     def load_data():
@@ -83,6 +84,7 @@ def pipeline():
         
         with engine.begin() as conn:
             conn.execute(stmt)
+        return 'data_loaded'
 
     @task
     def train_model(_):
@@ -130,7 +132,7 @@ def pipeline():
                 ridge_r2 = float(r2_score(y_test, ridge_preds))
                 mlflow.log_metric('Ridge_RMSE', ridge_rmse)
                 mlflow.log_metric('Ridge_R2', ridge_r2)
-                mlflow.sklearn.log_model(searchridge, "model_ridge", registered_model_name='ridge_regression_versions')
+                mlflow.sklearn.log_model(searchridge.best_estimator_, "model_ridge", registered_model_name='ridge_regression_versions')
 
 
             with mlflow.start_run(run_name="xgboost", nested=True):
