@@ -4,3 +4,8 @@ sqlalchemy
 psycopg2-binary
 scikit-learn
 xgboost
+mlflow
+apache-airflow
+apache-airflow-providers-postgres
+pendulum
+scipy

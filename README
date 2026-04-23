@@ -1,0 +1,19 @@
+# ML Training Pipeline (Airflow + MLflow + Postgres)
+
+## What it does
+- Loads Boston Housing dataset
+- Stores in Postgres with deduplication
+- Trains Ridge and XGBoost with hyperparameter tuning
+- Tracks experiments with MLflow
+- Selects best model based on RMSE
+- Stores metrics in database
+
+## Tech stack
+- Airflow
+- MLflow
+- PostgreSQL
+- scikit-learn
+- XGBoost
+
+## How to run
+- Requires Airflow + Postgres + MLflow running
