@@ -74,6 +74,11 @@ def pipeline():
         for col in num_cols:
             df[col] = df[col].fillna(df[col].median())
 
+
+        cat_cols = df.select_dtypes(include=['object']).columns
+        for col in cat_cols:
+            df[col] = df[col].fillna(df[col].mode()[0])
+
         df["row_hash"] = pd.util.hash_pandas_object(df, index=False).astype(str)
 
         metadata = MetaData()
@@ -84,6 +89,7 @@ def pipeline():
         
         with engine.begin() as conn:
             conn.execute(stmt)
+
         return 'data_loaded'
 
     @task
