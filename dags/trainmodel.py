@@ -130,7 +130,7 @@ def pipeline():
                 ridge_r2 = float(r2_score(y_test, ridge_preds))
                 mlflow.log_metric('Ridge_RMSE', ridge_rmse)
                 mlflow.log_metric('Ridge_R2', ridge_r2)
-                mlflow.sklearn.log_model(searchridge, "model_ridge")
+                mlflow.sklearn.log_model(searchridge, "model_ridge", registered_model_name='ridge_regression_versions')
 
 
             with mlflow.start_run(run_name="xgboost", nested=True):
@@ -167,7 +167,7 @@ def pipeline():
                 xgb_r2 = float(r2_score(y_test, xgb_preds))
                 mlflow.log_metric('Xgboost_RMSE', xgb_rmse)
                 mlflow.log_metric('Xgboost_R2', xgb_r2)
-                mlflow.xgboost.log_model(searchxgb.best_estimator_, "model_xgboost")
+                mlflow.xgboost.log_model(searchxgb.best_estimator_, "model_xgboost", registered_model_name='XGBregressor_versions')
 
             if ridge_rmse < xgb_rmse:
                 best_model_name = "ridge"
