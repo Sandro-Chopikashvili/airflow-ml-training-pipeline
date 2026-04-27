@@ -30,7 +30,6 @@ An end-to-end machine learning pipeline that automates data ingestion, model tra
 * `serving/` – FastAPI model serving service
   * `serve.py` – FastAPI app
   * `Dockerfile` – Container for the API
-  * `requirements.txt` – API dependencies
 * `requirements.txt` – Airflow dependencies
 * `docker-compose.yaml` – All services defined
 * `README.md` – Project documentation
