@@ -165,7 +165,7 @@ services:
     depends_on:
       mlflow:
         condition: service_healthy
-        
+
   airflow-apiserver:
     <<: *airflow-common
     command: api-server
@@ -343,5 +343,6 @@ services:
 volumes:
   postgres-db-volume:
   data-postgres-volume:
+  mlflow-postgres-volume:
 
 
