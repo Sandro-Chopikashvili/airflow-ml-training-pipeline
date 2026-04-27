@@ -119,6 +119,21 @@ services:
       start_period: 5s
     restart: always
 
+  mlflow-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow
+      POSTGRES_DB: mlflow
+    volumes:
+      - mlflow-postgres-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "mlflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    
   mlflow:
     build: .
     container_name: mlflow
@@ -126,7 +141,7 @@ services:
       mlflow server
       --host 0.0.0.0
       --port 5000
-      --backend-store-uri postgresql+psycopg2://test:test@data-postgres/test
+      --backend-store-uri postgresql+psycopg2://mlflow:mlflow@mlflow-postgres/mlflow
       --default-artifact-root /opt/mlflow/artifacts
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
@@ -138,7 +153,7 @@ services:
     volumes:
       - ./mlflow_artifacts:/opt/mlflow/artifacts
     depends_on:
-      postgres:
+      mlflow-postgres:   
         condition: service_healthy
 
   fastapi:
@@ -148,8 +163,9 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     depends_on:
-      - mlflow
-      
+      mlflow:
+        condition: service_healthy
+        
   airflow-apiserver:
     <<: *airflow-common
     command: api-server
