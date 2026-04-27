@@ -141,6 +141,15 @@ services:
       postgres:
         condition: service_healthy
 
+  fastapi:
+    build: ./serving
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+      
   airflow-apiserver:
     <<: *airflow-common
     command: api-server
