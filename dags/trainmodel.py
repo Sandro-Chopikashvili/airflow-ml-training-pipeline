@@ -18,6 +18,7 @@ from scipy.stats import randint, uniform
 import mlflow.xgboost
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from mlflow import MlflowClient
 
 
 url = 'https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv'
@@ -200,6 +201,43 @@ def pipeline():
                 }
             }
 
+
+    @task
+    def promote_best_model(metrics):
+        client = MlflowClient()
+        best = metrics["best_model"]
+        best_name = best["model_name"]
+        best_rmse = best["rmse"]
+
+        source_model_name = "ridge_regression_versions" if best_name == "ridge" else "XGBregressor_versions"
+        versions = client.search_model_versions(f"name='{source_model_name}'")
+
+        if not versions:
+            raise ValueError(f"No versions found for model {source_model_name}")
+
+        latest = max(versions, key=lambda v: int(v.version))
+
+        client.set_registered_model_alias(source_model_name, "champion", latest.version)
+
+        unified_name = "housing_price_model"
+        try:
+            client.create_registered_model(unified_name)
+        except Exception:
+            pass
+
+        new_version = client.create_model_version(
+            name=unified_name,
+            source=latest.source,
+            run_id=latest.run_id,
+        ).version
+
+        client.set_registered_model_alias(unified_name, "champion", new_version)
+
+        print(f"Promoted {source_model_name} v{latest.version} → @champion (RMSE: {best_rmse:.4f})")
+        print(f"Unified model {unified_name} v{new_version} → @champion")
+
+        return {"model_name": unified_name, "version": new_version, "alias": "champion"}
+
     @task
     def save_metrics(metrics):
         hook = PostgresHook(postgres_conn_id='data-postgres')
@@ -241,6 +279,9 @@ def pipeline():
     created >> loaded
 
     metrics = train_model(loaded)
-    save_metrics(metrics)
+    promoted = promote_best_model(metrics)
+    saved = save_metrics(metrics)
+
+    promoted >> saved
 
 pipeline()
